@@ -1,1 +1,1 @@
-C:\Users\PC\AppData\Local\Teardown\quicksave.bin
+C:\Users\{{user_name}}\AppData\Local\Teardown\quicksave.bin
