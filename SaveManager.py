@@ -22,17 +22,17 @@ class SaveManager:
         pathFile = None
         try:
             self.path = savePath
-            pathFile = open(fileWithPath, "r")
-            self.path = pathFile.readlines()[0].replace("{{user_name}}", os.getlogin())
+            pathFile = open(savePath, "r")
+            self.path = pathFile.readlines()[0]#.replace("{{user_name}}", os.getlogin())    // This feature is broken rn bc people can have different user folder names compared to the account name (like me)
             print("Found path.txt")
-
+            #print("     DEBUG: ",self.path)
             isFile = os.path.isfile(self.path) 
             if isFile:
-                print("quicksave.bin found in [" + self.path + "]")
+                print("Found quicksave.bin in [" + self.path + "]")
             else:
-                print("quicksave.bin was not found.")
+                raise Exception("quicksave.bin was not found.")
         except FileNotFoundError:
-            print("path.txt not found")
+            print("An exception occurred: path.txt was not found")
             input("Press ENTER to exit...")
             sys.exit(1)
         except Exception as e:
@@ -45,7 +45,6 @@ class SaveManager:
                   pathFile.close()
     
     # the startup prompt
-    @classmethod
     def AskForCommand(self):
         letter = input("\nDo you want to SAVE FILE (s) or LOAD FILE (l)?: ").lower() # lower
 
@@ -72,7 +71,7 @@ class SaveManager:
                     # "Are you sure" dialog
                     fileSelected = fileList[int(number)]
                     print("\nFile selected: " + fileSelected)
-                    proceed = input("Are you sure you want to load this file? (y/n): ")
+                    proceed = input("Are you sure you want to load this file? (y/n): ").lower()
 
                     if proceed == "y":
                         self.LoadFile(fileSelected)
@@ -92,7 +91,6 @@ class SaveManager:
             self.AskForCommand()
 
 
-    @classmethod
     def SaveFile(self, fileName):
         """
         Creates a new save file with the name `fileName`
@@ -105,7 +103,6 @@ class SaveManager:
         finally:
             input("Press ENTER to exit...")
     
-    @classmethod
     def LoadFile(self, fileName):
         """
         Loads the file `fileName` into the game
@@ -118,7 +115,6 @@ class SaveManager:
         finally:
             input("Press ENTER to exit...")
 
-    @classmethod
     def GetFilesInDirectory(self, extension):
         """
         Print all files in the CWD and return a list
