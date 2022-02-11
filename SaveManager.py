@@ -7,7 +7,6 @@ import sys
 import os
 
 #global path
-
 # copied from stackoverflow lolol
 def set_list(l, i, v):
       try:
@@ -19,11 +18,12 @@ def set_list(l, i, v):
 
 # main class
 class SaveManager:
-    def __init__(self, fileWithPath): # initial execution checks if required files exist
+    def __init__(self, savePath): # initial execution checks if required files exist
         pathFile = None
         try:
+            self.path = savePath
             pathFile = open(fileWithPath, "r")
-            self.path = pathFile.readlines()[0]
+            self.path = pathFile.readlines()[0].replace("{{user_name}}", os.getlogin())
             print("Found path.txt")
 
             isFile = os.path.isfile(self.path) 
@@ -45,47 +45,39 @@ class SaveManager:
                   pathFile.close()
     
     # the startup prompt
+    @classmethod
     def AskForCommand(self):
-        print("")
-        letter = input("Do you want to SAVE FILE (s) or LOAD FILE (l)?: ")
+        letter = input("\nDo you want to SAVE FILE (s) or LOAD FILE (l)?: ").lower() # lower
 
         if letter == "s": # Execute SAVE FILE protocol
-            print("\n") # double newline for distinguishing between active protocols
-            print("==========[SAVE FILE]==========")
+            print("\n\n==========[SAVE FILE]==========") # Easily distinguish between operations
             saveName = input("Save as (don't include .bin): ") + ".bin"
             # "Are you sure" dialog
-            print("")
-            print("Name selected: " + saveName)
-            proceed = input("Are you sure you want to save this file as the name above? (y/n): ")
-
+            print("\nName selected: " + saveName)
+            proceed = input("Are you sure you want to save this file as the name above? (y/n): ").lower()
             if proceed == "y":
                 self.SaveFile(saveName)
             elif proceed == "n":
-                print("")
-                print("SAVE FILE operation cancelled.")
+                print("\nSAVE FILE operation cancelled.")
                 input("Press ENTER to exit...")
 
         elif letter == "l": # Execute LOAD FILE protocol
-            print("\n") # double newline for distinguishing between active protocols
-            print("==========[LOAD FILE]==========")
+            print("\n\n==========[LOAD FILE]==========") # Easily distinguish between operations
             fileList = self.GetFilesInDirectory(".bin")
 
             def recurse(): # Ask for file (by number)
-                print("")
-                number = input("Select a file (by number): ")
+                number = input("\nSelect a file (by number): ")
 
                 try: # Confirm file selection
                     # "Are you sure" dialog
                     fileSelected = fileList[int(number)]
-                    print("")
-                    print("File selected: " + fileSelected)
+                    print("\nFile selected: " + fileSelected)
                     proceed = input("Are you sure you want to load this file? (y/n): ")
 
                     if proceed == "y":
                         self.LoadFile(fileSelected)
                     elif proceed == "n":
-                        print("")
-                        print("LOAD FILE operation cancelled.")
+                        print("\nLOAD FILE operation cancelled.")
                         input("Press ENTER to exit...")
                 except IndexError: # if index is out of range
                     print("Invalid number. Try again.")
@@ -100,36 +92,42 @@ class SaveManager:
             self.AskForCommand()
 
 
-    # these functions can be ran manually and they won't check for confirmation.
-    # Saves a file with name "saveAsName"
-    def SaveFile(self, saveAsName):
+    @classmethod
+    def SaveFile(self, fileName):
+        """
+        Creates a new save file with the name `fileName`
+        """
         try:
-            shutil.copyfile(self.path, f"{saveAsName}")
-            print("")
-            print("File saved successfully.")
+            shutil.copyfile(self.path, f"{fileName}")
+            print("\nFile saved successfully.")
         except Exception as e:
             print("An error occurred: " + str(e))
         finally:
             input("Press ENTER to exit...")
     
-    # Loads a file with name "fileName"
+    @classmethod
     def LoadFile(self, fileName):
+        """
+        Loads the file `fileName` into the game
+        """
         try:
             shutil.copyfile(f"{fileName}", self.path)
-            print("")
-            print("File loaded successfully.")
+            print("\nFile loaded successfully.")
         except Exception as e:
             print("An error occurred: " + str(e))
         finally:
             input("Press ENTER to exit...")
 
-    # prints all files in current working directory and returns a list 
+    @classmethod
     def GetFilesInDirectory(self, extension):
+        """
+        Print all files in the CWD and return a list
+        """
         index = -1
         fileList = []
         for file in os.scandir(os.getcwd()):
             if file.is_file():
-                if file.name.endswith(".bin"):
+                if file.name.endswith(extension):
                     index += 1
                     # it's a .bin file which is what we need
                     print(f"[{index}] " + file.name)
@@ -137,10 +135,6 @@ class SaveManager:
 
         return fileList
 
-#print("\n"*3)
+
 manager = SaveManager("path.txt")
 manager.AskForCommand()
-
-#input()
-
-#shutil.copyfile('/Users/datagy/Desktop/file.py', '/Users/datagy/Desktop/file2.py')
